@@ -1,24 +1,36 @@
 #include <Arduino.h>
-#define but 10
-int flag_but = 1;
-
+#define botaoAbreTudo 10
+int flag_botaoAbreTudo = 1;
+#define botaoFechaTudo 11
+int flag_botaoFechaTudo = 1;
 void setup()
 {
   Serial.begin(9600);
-  pinMode(but, INPUT_PULLUP);
+  pinMode(botaoAbreTudo, INPUT_PULLUP);
+  pinMode(botaoFechaTudo, INPUT_PULLUP);
 }
 
 void loop()
 {
-  // Transforma em um botão clicavel
-  if (digitalRead(but) == 0 && flag_but == 1)
+  // BOTÃO ABRE A CORTINA POR INTEIRO
+  if (digitalRead(botaoAbreTudo) == 0 && flag_botaoAbreTudo == 1)
   {
-    flag_but = 0;
-    flag_dia = !flag_dia;
+    flag_botaoAbreTudo = 0;
     delay(100);
   }
-  else if (digitalRead(but) == 1 && flag_but == 0)
+  else if (digitalRead(botaoAbreTudo) == 1 && flag_botaoAbreTudo == 0)
   {
-    flag_but = 1;
+    flag_botaoAbreTudo = 1;
+    delay(100);
+  }
+  // BOTÃO FECHA A CORTINA POR INTEIRO
+  if (digitalRead(botaoFechaTudo) == 0 && flag_botaoFechaTudo == 1)
+  {
+    flag_botaoAbreTudo = 0;
+    delay(100);
+  }
+  else if (digitalRead(botaoFechaTudo) == 1 && flag_botaoFechaTudo == 0)
+  {
+    flag_botaoFechaTudo = 1;
     delay(100);
   }
