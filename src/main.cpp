@@ -1,63 +1,111 @@
 #include <Arduino.h>
-#define Ena1 11
-#define IN1 10
-#define IN2 8
+#define Ena1 11 //ENABLE 1 E 2
+#define IN1 10  // ENTRADA 1
+#define IN2 8   // ENTRADA 2
 #define abre 2
 #define fecha 3
-#define botaoAbreTudo 7
-int flag_botaoAbreTudo = 1;
-#define botaoFechaTudo 8
-int flag_botaoFechaTudo = 1;
+#define grava 4
+#define abre_tudo 5
+#define fecha_tudo 6
+int flag_botao_grava = 0;
+int flag_segura_botao = 0;
+int flag_tempo_fixo = 0;
+int flag_tempo_abre = 0;
+int flag_tempo_fecha = 0;
+int flag_fecha_tudo = 0;
+int flag_abre_tudo = 0;
+int flag_oneClickOpenAll = 0;
+int flag_oneClickCloseAll = 0;
+int cont1 = 0;
+int cont2 = 0;
 void setup()
 {
   Serial.begin(9600);
-  pinMode(botaoAbreTudo, INPUT_PULLUP);
-  pinMode(botaoFechaTudo, INPUT_PULLUP);
   pinMode(Ena1, OUTPUT);
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
   pinMode(abre, INPUT_PULLUP);
   pinMode(fecha, INPUT_PULLUP);
+  pinMode(grava, INPUT_PULLUP);
+  pinMode(abre_tudo, INPUT_PULLUP);
+  pinMode(fecha_tudo, INPUT_PULLUP);
+  pinMode(13, OUTPUT);
 }
 
 void loop()
 {
-  //BOTÃO ABRE E FECHA CORTINA(SEGURANDO)
-  if (digitalRead(abre) == 0)
+  //VERIFICA SE O CONTADOR DO BOTÃO É MENOR QUE O CONTADOR DA LEITURA GRAVADA SE FOR ELE PERMITE QUE A CORTINA ABRA
+  if (digitalRead(abre) == 0 && flag_tempo_abre < flag_tempo_fixo)
   {
     digitalWrite(IN1, 0);
     digitalWrite(IN2, 1);
     analogWrite(Ena1, 120);
+    flag_tempo_abre++;
+    flag_tempo_fecha--;
   }
-  else if (digitalRead(fecha) == 0)
+  //VERIFICA SE O CONTADOR DO BOTÃO É MENOS QUE O DA LEITURA GRAVADA SE FOR ELE PERMITE QUE A CORTINA FECHE
+  else if (digitalRead(fecha) == 0 && flag_tempo_fecha < flag_tempo_fixo)
   {
     digitalWrite(IN1, 1);
     digitalWrite(IN2, 0);
     analogWrite(Ena1, 120);
+    flag_tempo_fecha++;
+    flag_tempo_abre--;
   }
-  else
+  // SE SOLTAR O BOTÃO OU O CONTADOR DO BOTÃO DE ABRIR FOR MAIOR ELE DESLIGA O MOTOR
+  else if (digitalRead(abre) == 1 || flag_tempo_abre >= flag_tempo_fixo)
   {
     analogWrite(Ena1, 0);
   }
-  // BOTÃO ABRE A CORTINA POR INTEIRO
-  if (digitalRead(botaoAbreTudo) == 0 && flag_botaoAbreTudo == 1)
+  // SE SOLTAR O BOTÃO OU O CONTADOR DO BOTÃO DE FECHAR FOR MAIOR ELE DELIGA O MOTOR
+  else if (digitalRead(fecha) == 1 || flag_tempo_fecha >= flag_tempo_fixo)
   {
-    flag_botaoAbreTudo = 0;
+    analogWrite(Ena1, 0);
+  }
+  // FAZ COM QUE O BOTÃO SO POSSA SER APERTADO UMA VEZ, DEPOIS PRECISA SOLTAR E APERTAR NOVAMENTE
+  // FAZ COM QUE O BOTÃO DE GRAVAÇÃO TENHA O MODO ON E OFF
+  if (digitalRead(grava) == 0 && flag_botao_grava == 0)
+  {
+    flag_botao_grava = 1;
+    flag_segura_botao = !flag_segura_botao;
     delay(100);
   }
-  else if (digitalRead(botaoAbreTudo) == 1 && flag_botaoAbreTudo == 0)
+  else if (digitalRead(grava) == 1 && flag_botao_grava == 1)
   {
-    flag_botaoAbreTudo = 1;
+    flag_botao_grava = !flag_botao_grava;
     delay(100);
   }
-  // BOTÃO FECHA A CORTINA POR INTEIRO
-  if (digitalRead(botaoFechaTudo) == 0 && flag_botaoFechaTudo == 1)
+  // BOTÃO DE GRAVAÇÃO
+  if (flag_segura_botao == 1)
   {
-    flag_botaoAbreTudo = 0;
-    delay(100);
+    digitalWrite(13, HIGH);
+    flag_tempo_fixo++;
+    digitalWrite(IN1, 0);
+    digitalWrite(IN2, 1);
+    analogWrite(Ena1, 120);
+    flag_tempo_abre++;
   }
-  else if (digitalRead(botaoFechaTudo) == 1 && flag_botaoFechaTudo == 0)
+  else
   {
-    flag_botaoFechaTudo = 1;
-    delay(100);
+    digitalWrite(13, LOW);
   }
+  if (digitalRead(abre_tudo) == 1 && flag_abre_tudo == 1)
+  {
+    flag_oneClickOpenAll = 1;
+    flag_abre_tudo = 0;
+  }
+  else if (digitalRead(abre_tudo) == 0 && flag_abre_tudo == 0)
+  {
+    flag_abre_tudo = 1;
+  }
+
+  if (digitalRead(fecha_tudo) == 1 && flag_fecha_tudo == 1)
+  {
+    flag_oneClickCloseAll = 1;
+    flag_fecha_tudo = 0;
+  }
+  else if (digitalRead(fecha_tudo) == 0 && flag_fecha_tudo == 0)
+  {
+    flag_fecha_tudo = 1;
+  }
+}
