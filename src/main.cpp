@@ -18,6 +18,7 @@ int flag_oneClickOpenAll = 0;
 int flag_oneClickCloseAll = 0;
 int cont1 = 0;
 int cont2 = 0;
+int teste1 = 0;
 void setup()
 {
   Serial.begin(9600);
@@ -34,78 +35,109 @@ void setup()
 
 void loop()
 {
-  //VERIFICA SE O CONTADOR DO BOTÃO É MENOR QUE O CONTADOR DA LEITURA GRAVADA SE FOR ELE PERMITE QUE A CORTINA ABRA
-  if (digitalRead(abre) == 0 && flag_tempo_abre < flag_tempo_fixo)
-  {
-    digitalWrite(IN1, 0);
-    digitalWrite(IN2, 1);
-    analogWrite(Ena1, 120);
-    flag_tempo_abre++;
-    flag_tempo_fecha--;
-  }
-  //VERIFICA SE O CONTADOR DO BOTÃO É MENOS QUE O DA LEITURA GRAVADA SE FOR ELE PERMITE QUE A CORTINA FECHE
-  else if (digitalRead(fecha) == 0 && flag_tempo_fecha < flag_tempo_fixo)
-  {
-    digitalWrite(IN1, 1);
-    digitalWrite(IN2, 0);
-    analogWrite(Ena1, 120);
-    flag_tempo_fecha++;
-    flag_tempo_abre--;
-  }
-  // SE SOLTAR O BOTÃO OU O CONTADOR DO BOTÃO DE ABRIR FOR MAIOR ELE DESLIGA O MOTOR
-  else if (digitalRead(abre) == 1 || flag_tempo_abre >= flag_tempo_fixo)
-  {
-    analogWrite(Ena1, 0);
-  }
-  // SE SOLTAR O BOTÃO OU O CONTADOR DO BOTÃO DE FECHAR FOR MAIOR ELE DELIGA O MOTOR
-  else if (digitalRead(fecha) == 1 || flag_tempo_fecha >= flag_tempo_fixo)
-  {
-    analogWrite(Ena1, 0);
-  }
-  // FAZ COM QUE O BOTÃO SO POSSA SER APERTADO UMA VEZ, DEPOIS PRECISA SOLTAR E APERTAR NOVAMENTE
-  // FAZ COM QUE O BOTÃO DE GRAVAÇÃO TENHA O MODO ON E OFF
-  if (digitalRead(grava) == 0 && flag_botao_grava == 0)
-  {
-    flag_botao_grava = 1;
-    flag_segura_botao = !flag_segura_botao;
-    delay(100);
-  }
-  else if (digitalRead(grava) == 1 && flag_botao_grava == 1)
-  {
-    flag_botao_grava = !flag_botao_grava;
-    delay(100);
-  }
-  // BOTÃO DE GRAVAÇÃO
-  if (flag_segura_botao == 1)
+  //VERIFICA SE O BOTÃO DE GRAVAR ESTA APERTADO
+  if (digitalRead(grava) == 0)
   {
     digitalWrite(13, HIGH);
     flag_tempo_fixo++;
     digitalWrite(IN1, 0);
     digitalWrite(IN2, 1);
-    analogWrite(Ena1, 120);
+    analogWrite(Ena1, 255);
     flag_tempo_abre++;
+    Serial.println(flag_tempo_fixo);
   }
-  else
+  // SE NÃO FOR FEITO NENHUMA GRAVAÇÃO
+  else if (flag_tempo_fixo == 0)
   {
     digitalWrite(13, LOW);
   }
-  if (digitalRead(abre_tudo) == 1 && flag_abre_tudo == 1)
+  //APOS A GRAVAÇÃO SER FEITA
+  else if (flag_tempo_fixo != 0 && digitalRead(grava) == 1)
   {
+    digitalWrite(13, LOW);
+    //VERIFICA SE O CONTADOR DO BOTÃO É MENOR QUE O CONTADOR DA LEITURA GRAVADA SE FOR ELE PERMITE QUE A CORTINA ABRA
+    if (digitalRead(abre) == 0 && flag_tempo_abre < flag_tempo_fixo)
+    {
+      digitalWrite(IN1, 0);
+      digitalWrite(IN2, 1);
+      analogWrite(Ena1, 255);
+      flag_tempo_abre++;
+      flag_tempo_fecha--;
+      Serial.print("abre segurando: ");
+      Serial.print(flag_tempo_abre);
+      Serial.print("\n");
+    }
+    //VERIFICA SE O CONTADOR DO BOTÃO É MENOS QUE O DA LEITURA GRAVADA SE FOR ELE PERMITE QUE A CORTINA FECHE
+    else if (digitalRead(fecha) == 0 && flag_tempo_fecha < flag_tempo_fixo)
+    {
+      digitalWrite(IN1, 1);
+      digitalWrite(IN2, 0);
+      analogWrite(Ena1, 255);
+      flag_tempo_fecha++;
+      flag_tempo_abre--;
+      Serial.print("Fecha segurando: ");
+      Serial.print(flag_tempo_fecha);
+      Serial.print("\n");
+    }
+    // SE SOLTAR O BOTÃO OU O CONTADOR DO BOTÃO DE ABRIR FOR MAIOR ELE DESLIGA O MOTOR
+    else if (digitalRead(abre) == 1 || flag_tempo_abre >= flag_tempo_fixo)
+    {
+      analogWrite(Ena1, 0);
+    }
+    // SE SOLTAR O BOTÃO OU O CONTADOR DO BOTÃO DE FECHAR FOR MAIOR ELE DELIGA O MOTOR
+    else if (digitalRead(fecha) == 1 || flag_tempo_fecha >= flag_tempo_fixo)
+    {
+      analogWrite(Ena1, 0);
+    }
+    // FECHA TUDO
+    if (digitalRead(fecha_tudo) == 0 && flag_oneClickCloseAll == 0)
+    {
+      while (cont1 < flag_tempo_fixo)
+      {
+        digitalWrite(IN1, 1);
+        digitalWrite(IN2, 0);
+        analogWrite(Ena1, 255);
+        flag_tempo_abre--;
+        flag_tempo_fecha++;
+        cont1++;
+        Serial.println(cont1);
+      }
+      flag_oneClickCloseAll = 1;
+      delay(100);
+      Serial.print("fecha tudo: ");
+      Serial.print(cont1);
+      Serial.print("\n");
+    }
+    else if (digitalRead(fecha_tudo) == 1 && flag_oneClickCloseAll == 1)
+    {
+      cont1 = 0;
+      flag_oneClickCloseAll = 0;
+      delay(100);
+    }
+  }
+  //ABRE TUDO
+  if (digitalRead(abre_tudo) == 0 && flag_oneClickOpenAll == 0)
+  {
+    while (cont2 < flag_tempo_fixo)
+    {
+      digitalWrite(IN1, 1);
+      digitalWrite(IN2, 0);
+      analogWrite(Ena1, 255);
+      flag_tempo_abre++;
+      flag_tempo_fecha--;
+      cont2++;
+      Serial.println(cont2);
+    }
     flag_oneClickOpenAll = 1;
-    flag_abre_tudo = 0;
+    delay(100);
+    Serial.print("abre tudo:");
+    Serial.print(cont2);
+    Serial.print("\n");
   }
-  else if (digitalRead(abre_tudo) == 0 && flag_abre_tudo == 0)
+  else if (digitalRead(fecha_tudo) == 1 && flag_oneClickOpenAll == 1)
   {
-    flag_abre_tudo = 1;
-  }
-
-  if (digitalRead(fecha_tudo) == 1 && flag_fecha_tudo == 1)
-  {
-    flag_oneClickCloseAll = 1;
-    flag_fecha_tudo = 0;
-  }
-  else if (digitalRead(fecha_tudo) == 0 && flag_fecha_tudo == 0)
-  {
-    flag_fecha_tudo = 1;
+    cont2 = 0;
+    flag_oneClickOpenAll = 0;
+    delay(100);
   }
 }
