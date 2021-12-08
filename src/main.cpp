@@ -1,12 +1,12 @@
 #include <Arduino.h>
-#define Ena1 11 //ENABLE 1 E 2
-#define IN1 10  // ENTRADA 1
-#define IN2 8   // ENTRADA 2
-#define abre 2
-#define fecha 3
-#define grava 4
-#define abre_tudo 5
-#define fecha_tudo 6
+#define Ena1 5 //ENABLE 1 E 2
+#define IN1 4  // ENTRADA 1
+#define IN2 3  // ENTRADA 2
+#define abre 9
+#define fecha 10
+#define grava 11
+#define abre_tudo 12
+#define fecha_tudo 13
 int flag_botao_grava = 0;
 int flag_segura_botao = 0;
 int flag_tempo_fixo = 0;
@@ -30,7 +30,7 @@ void setup()
   pinMode(grava, INPUT_PULLUP);
   pinMode(abre_tudo, INPUT_PULLUP);
   pinMode(fecha_tudo, INPUT_PULLUP);
-  pinMode(13, OUTPUT);
+  pinMode(2, OUTPUT);
 }
 
 void loop()
@@ -38,7 +38,7 @@ void loop()
   //VERIFICA SE O BOTÃO DE GRAVAR ESTA APERTADO
   if (digitalRead(grava) == 0)
   {
-    digitalWrite(13, HIGH);
+    digitalWrite(2, HIGH);
     flag_tempo_fixo++;
     digitalWrite(IN1, 0);
     digitalWrite(IN2, 1);
@@ -49,12 +49,12 @@ void loop()
   // SE NÃO FOR FEITO NENHUMA GRAVAÇÃO
   else if (flag_tempo_fixo == 0)
   {
-    digitalWrite(13, LOW);
+    digitalWrite(2, LOW);
   }
   //APOS A GRAVAÇÃO SER FEITA
   else if (flag_tempo_fixo != 0 && digitalRead(grava) == 1)
   {
-    digitalWrite(13, LOW);
+    digitalWrite(2, LOW);
     //VERIFICA SE O CONTADOR DO BOTÃO É MENOR QUE O CONTADOR DA LEITURA GRAVADA SE FOR ELE PERMITE QUE A CORTINA ABRA
     if (digitalRead(abre) == 0 && flag_tempo_abre < flag_tempo_fixo)
     {
